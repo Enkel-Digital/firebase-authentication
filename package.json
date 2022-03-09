@@ -1,0 +1,39 @@
+{
+  "name": "@enkeldigital/firebase-authentication",
+  "description": "Library to create Express JS authentication and authorization middlewares",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "types": "./dist",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npx tsc",
+    "build:watch": "npx tsc -w"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Enkel-Digital/firebase-authentication.git"
+  },
+  "keywords": [
+    "Express",
+    "firebase",
+    "authentication",
+    "middleware",
+    "plugin"
+  ],
+  "bugs": {
+    "url": "https://github.com/Enkel-Digital/firebase-authentication/issues"
+  },
+  "homepage": "https://github.com/Enkel-Digital/firebase-authentication#readme",
+  "author": "JJ",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "firebase-admin": "^10.0.2",
+    "typescript": "^4.6.2"
+  }
+}
