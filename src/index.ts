@@ -22,10 +22,13 @@ declare global {
 /**
  * @name firebaseAuthentication
  *
+ * @param firebaseAuth Firebase's auth service
+ * @param checkRevoked Should middleware make network request to firebase auth servers to check if token revoked. Defaults to no checking to prevent the extra network trip as it would slow down the authentication process. Only set if absolutely neccessary.
+ *
  * The return type is mainly to ensure that the code in this function adheres to the expected return type,
  * but it is not neccessary to work with the create-express-auth-middleware library.
  */
-export default (firebaseAuth: Auth) =>
+export default (firebaseAuth: Auth, checkRevoked: boolean = false) =>
   async (req: Request): Promise<boolean | { error: string }> => {
     // Check if auth token is available, note that headers are all lowercased by express
     if (!req.headers.authorization) return { error: "Missing auth header" };
@@ -44,7 +47,10 @@ export default (firebaseAuth: Auth) =>
     // because if it is not a string or it is empty, this firebase method will throw an error
     //
     // Attach decoded token to req object to use downstream
-    req.jwt = await firebaseAuth.verifyIdToken(tokenString as string);
+    req.jwt = await firebaseAuth.verifyIdToken(
+      tokenString as string,
+      checkRevoked
+    );
 
     // Break out of this predicate function and indicate that the user is successfully authenticated
     return true;
