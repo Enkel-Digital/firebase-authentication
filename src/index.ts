@@ -3,36 +3,31 @@ import type { Request } from "express";
 
 /**
  * @name firebaseAuthentication
+ *
+ * The return type is mainly to ensure that the code in this function adheres to the expected return type,
+ * but it is not neccessary to work with the create-express-auth-middleware library.
  */
 export default (firebaseAuth: Auth) =>
-  async function (
-    req: Request
-  ): Promise<boolean | { status: number; error: string }> {
-    // Get auth token if available
-    // Note that headers are all lowercased by express
-    if (req.headers.authorization) {
-      const authHeader = req.headers.authorization.split(" ");
+  async (req: Request): Promise<boolean | { error: string }> => {
+    // Check if auth token is available, note that headers are all lowercased by express
+    if (!req.headers.authorization) return { error: "Missing auth header" };
 
-      // // Check if the auth header follows the "bearer" pattern
-      if (authHeader[0] === "Bearer") {
-        // https://firebase.google.com/docs/auth/admin/verify-id-tokens#verify_id_tokens_using_the_firebase_admin_sdk
-        // The verifyIdToken needs a project ID, but should be taken care of if firebase admin has been initialised properly or runs on gcp infra
-        //
-        // Attach decoded token to req object to use downstream
-        // Users can choose what key to attach the decoded token to.
-        //
-        // Can assume to be string, if not string, firebase auth code will throw an error
-        req.jwt = await firebaseAuth.verifyIdToken(authHeader[1] as string);
+    // Get the authentication scheme and encoded token string from the header string
+    const [authScheme, tokenString] = req.headers.authorization.split(" ");
 
-        // Break out of this middleware and continue with the next one
-        return true;
-      }
-      // If token missing or token malformed, end the request in this middleware
-      // 401 Missing auth token thus unauthorised
-      else
-        return {
-          status: 401,
-          error: "Unexpected Auth header pattern, expects bearer pattern",
-        };
-    } else return { status: 401, error: "Missing auth header" };
+    // Check if Bearer Authentication Scheme is used, end request in this middleware if invalid scheme is used
+    if (authScheme !== "Bearer")
+      return { error: "Expected Bearer Authentication Scheme" };
+
+    // https://firebase.google.com/docs/auth/admin/verify-id-tokens#verify_id_tokens_using_the_firebase_admin_sdk
+    // The verifyIdToken needs a project ID, but should be taken care of if firebase admin has been initialised properly or runs on gcp infra
+    //
+    // Can assume and type cast auth header's second part as string,
+    // because if it is not a string or it is empty, this firebase method will throw an error
+    //
+    // Attach decoded token to req object to use downstream
+    req.jwt = await firebaseAuth.verifyIdToken(tokenString as string);
+
+    // Break out of this predicate function and indicate that the user is successfully authenticated
+    return true;
   };
