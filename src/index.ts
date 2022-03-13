@@ -2,19 +2,17 @@ import type { Auth, DecodedIdToken } from "firebase-admin/auth";
 import type { Request } from "express";
 
 /*
-  Extending the Request type to add `jwt` property set by this authentication middleware.
-  Although the jwt property should only be set for routes after the authentication middleware,
-  it is impossible to model the types so that RequestHandlers before the authentication middleware
-  gets the Request type without jwt while RequestHandlers set after the authentication middleware
-  gets the Request type that has the jwt property set.
-  
-  Thus the comprimise is that the jwt type is always set however users should be careful to only
-  access and use it in middlewares and RequestHandlers that are set after this authentication middleware.
+  Extending the Request type to add an optional `jwt` property set by this authentication function.
+  Since the jwt property is set by this authentication function,
+  it can only be accessed by routes defined after registering an authentication middleware using this function.
+  Which means that the jwt property is not always set, thats why its an optional property.
+
+  Users could do `req.jwt?.someProp` to skip the undefined check if really needed as an escape hatch.
 */
 declare global {
   namespace Express {
     interface Request {
-      jwt: DecodedIdToken;
+      jwt?: DecodedIdToken;
     }
   }
 }
